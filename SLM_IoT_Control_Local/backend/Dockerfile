@@ -9,6 +9,8 @@ COPY requirements.txt .
 # instala dependências
 RUN pip install --no-cache-dir -r requirements.txt
 
+ENV PYTHONUNBUFFERED=1
+
 # copia o projeto
 COPY . .
 
