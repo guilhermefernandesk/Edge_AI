@@ -13,6 +13,7 @@ services:
       if ! ollama list | grep -q 'gemma3'; then
         echo 'Baixando modelo gemma3...';
         ollama pull gemma3;
+        ollama pull nomic-embed-text;
       else
         echo 'Modelo gemma3 já está instalado.';
       fi &&

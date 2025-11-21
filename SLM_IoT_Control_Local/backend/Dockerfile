@@ -1,4 +1,4 @@
-FROM python:3.14.0-alpine
+FROM python:3.11-slim
 
 # define diretório de trabalho
 WORKDIR /usr/src/app
