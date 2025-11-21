@@ -1,5 +1,4 @@
 import requests
-import re
 
 class AGENT:
     def __init__(
@@ -9,36 +8,46 @@ class AGENT:
     ):
         self.model = model
         self.ollama_host = ollama_host
+        self.session = requests.Session()
+        self.session.headers.update({"Connection": "keep-alive"})
 
     def ask_ollama_for_classification(self, user_input):
         classification_prompt = f"""
-        Classifique a intenção do usuário.
-        Categorias:
-        - "iot": perguntas sobre sensores, atuadores, comandos, LEDs, temperatura, DHT11, GPIO, microcontrolador executando ações.
-        - "documentation": perguntas sobre Franzininho, especificações, pinos, módulos, datasheet, tutoriais.
-        - "general": qualquer outra coisa.
-        Pergunta: "{user_input}"
-        Responda apenas com: iot / documentation / general
-        """
-
+Classifique a intenção do usuário em UMA palavra das 3 categorias a seguir.
+- iot: perguntas sobre sensores, atuadores, comandos, LEDs, temperatura, DHT11, GPIO, microcontrolador executando ações.
+- documentation: perguntas sobre Franzininho, especificações, pinos, módulos, datasheet, tutoriais.
+- general: qualquer outra coisa.
+Regras:
+- Responda SOMENTE com exatamente uma dessas palavras.
+- Não adicione nenhuma frase, explicação ou texto adicional.
+Pergunta: {user_input}
+Resposta:
+"""
         try:
             print(f"Sending classification request to Ollama")
-            response = requests.post(
+            response = self.session.post(
                 f"{self.ollama_host}/api/generate",
                 json={
                     "model": self.model,
                     "prompt": classification_prompt,
-                    "stream": False
+                    "stream": False,
+                    "options": {
+                        "temperature": 0.0,
+                        "num_predict": 5,
+                        "top_k": 5,
+                        "top_p": 0.5,
+                        "stop": ["\n"], 
+                        "seed": 42
+                    }
                 }
             )
-            if response.status_code == 200:
-                response_text = response.json().get("response", "").strip()
-                print(f"Classification response: {response_text}")
-                return response_text
-            else:
-                print(f"Error: Received status code {response.status_code} from Ollama.")
-                raise (f"Error: Received status code {response.status_code} from Ollama.")
-        
+            if response.status_code != 200:
+                print(f"Error: Received status code {response.status_code}")
+                return "Error"
+
+            response_text = response.json().get("response", "")
+            return response_text
+                    
         except Exception as e:
             print(f"Error connecting to Ollama: {str(e)}")
             return "Error"
@@ -50,11 +59,9 @@ class AGENT:
             "Responda APENAS com 1 frase curta, com no máximo 12 palavras. "
             "Não use exemplos, listas ou explicações. "
             "Não escreva mais de UMA sentença. "
-            "Se precisar, responda de forma extremamente curta. "
-            "Resposta obrigatória em apenas UMA frase.\n\n"
             f"Pergunta: {query}\nResposta:"
             )
-            response = requests.post(
+            response = self.session.post(
                 f"{self.ollama_host}/api/generate",
                 json={
                     "model": self.model,

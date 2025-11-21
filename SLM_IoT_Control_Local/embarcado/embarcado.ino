@@ -36,7 +36,6 @@ struct PomodoroStatus
   bool start;
   bool stop;
   int minutes;
-  int seconds;
 };
 
 struct responseLLM
@@ -100,10 +99,20 @@ struct responseLLM sendToLlm(float temp, float hum, bool button_state, bool ledR
 {
   struct responseLLM response;
 
-  HTTPClient http; // Create an HTTP client instance
-  http.setTimeout(60000);
+  String classification = sendClassificationToLlm(input);
+  if (classification == "Error")
+  {
+    response.message = "Error: Invalid classification";
+    response.success = false;
+    return response;
+  }
+
+  HTTPClient http;                                    // Create an HTTP client instance
+  http.setTimeout(120000);                            // Set read timeout to 120 seconds
   http.begin((serverPath + "/ollama").c_str());       // Start the connection to the server on the route
   http.addHeader("Content-Type", "application/json"); // Add the Content-Type header
+  http.addHeader("Connection", "keep-alive");
+  http.addHeader("keep-alive", "timeout=120");
 
   // Create request JSON
   DynamicJsonDocument doc(1024);
@@ -116,6 +125,7 @@ struct responseLLM sendToLlm(float temp, float hum, bool button_state, bool ledR
   doc["ldr_value"] = ldrValue;
   doc["servo_angle"] = servoAngle;
   doc["user_input"] = input;
+  doc["classification"] = classification;
   String jsonRequest;
   serializeJson(doc, jsonRequest);
   // Send request
@@ -146,6 +156,8 @@ struct responseLLM sendToLlm(float temp, float hum, bool button_state, bool ledR
   }
 
   // Extrair dados da resposta
+  Serial.println(String(responseDoc["response"]));
+
   response.message = responseDoc["message"] | "Sem resposta";
   response.leds.red = responseDoc["red_led"] | false;
   response.leds.blue = responseDoc["blue_led"] | false;
@@ -154,10 +166,47 @@ struct responseLLM sendToLlm(float temp, float hum, bool button_state, bool ledR
   response.pomodoro.start = responseDoc["pomodoro"]["start"] | false;
   response.pomodoro.stop = responseDoc["pomodoro"]["stop"] | false;
   response.pomodoro.minutes = responseDoc["pomodoro"]["minutes"] | 0;
-  response.pomodoro.seconds = responseDoc["pomodoro"]["seconds"] | 0;
   response.success = true;
 
   return response;
+}
+
+String sendClassificationToLlm(String input)
+{
+  HTTPClient http;                                      // Create an HTTP client instance
+  http.setTimeout(60000);                               // Set read timeout to 60 seconds
+  http.begin((serverPath + "/classification").c_str()); // Start the connection to the server on the route
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("Connection", "keep-alive");
+  // Create request JSON
+  DynamicJsonDocument doc(1024);
+  doc["user_input"] = input;
+  String jsonRequest;
+  serializeJson(doc, jsonRequest);
+  // Send request
+  int httpCode = http.POST(jsonRequest);
+  if (httpCode != HTTP_CODE_OK)
+  {
+    Serial.printf("[HTTP_1] ERROR: Code %d - %s\n", httpCode, http.errorToString(httpCode).c_str());
+    http.end();
+    return "Error";
+  }
+  // Process response
+  String jsonResponse = http.getString();
+  http.end();
+
+  DynamicJsonDocument responseDoc(1024);
+  DeserializationError error = deserializeJson(responseDoc, jsonResponse);
+
+  if (error)
+  {
+    Serial.print(F("[HTTP_2] ERROR: Failed to parse JSON: "));
+    Serial.println(error.c_str());
+    return "Error";
+  }
+  // Extrair dados da resposta
+  String classification = responseDoc["classification"];
+  return classification;
 }
 
 // ============================================================================
@@ -171,7 +220,7 @@ void printSystemStatus(float temp, float hum, bool button_state, bool ledRed, bo
   Serial.println(F("============================================================"));
   Serial.println("DHT11 Sensor: Temp = " + String(temp, 1) + "°C, Humidity: " + String(hum, 1) + "%");
   Serial.println("LDR Value: " + String(ldrValue));
-  Serial.println("Servo Angle: " + String(servoAngle) + " °");
+  Serial.println("Servo Angle: " + String(servoAngle) + "°");
   Serial.println("Button: " + String(button_state ? "PRESSED" : "NOT PRESSED"));
   Serial.println("LED Status:");
   Serial.println("Red LED: " + String(ledRed ? "● ON" : "○ OFF"));
@@ -252,8 +301,6 @@ void loop()
     // Mostra no display (resposta IA)
     showMessage("Assistant: " + response.message);
 
-    delay(1000);
-
     if (!response.success)
     {
       return;
@@ -264,7 +311,6 @@ void loop()
 
     // Ajusta servo
     servoAngle = response.servoAngle;
-    Serial.println(String(servoAngle));
     // myServo.write(servoAngle);
 
     // Configura o pomodoro

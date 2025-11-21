@@ -35,7 +35,7 @@ from langchain_ollama import ChatOllama, OllamaEmbeddings
 #                         message="API key must be provided when using hosted LangSmith API",
 #                         category=UserWarning)
 
-# all-minilm
+# ollama pull all-minilm;
 # ollama pull gemma3;
 
 class RAG:

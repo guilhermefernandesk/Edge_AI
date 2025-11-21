@@ -32,20 +32,25 @@ useAGENT = AGENT(
     ollama_host=OLLAMA_HOST
 )
 
+@app.route("/classification", methods=["POST"])
+def classification():
+    body = rq.get_json()
+    print(body["user_input"])
+    # Agent
+    classification = useAGENT.ask_ollama_for_classification(body["user_input"])
+    print(f"Classification: {classification}")
+    return jsonify({
+        "classification": classification
+    })
+
 @app.route("/ollama", methods=["POST"]) 
 def ollama():
     body = rq.get_json()
 
-    # Agent
-    # classification = useAGENT.ask_ollama_for_classification(body["user_input"])
-    classification = useAGENT.manual_classification(body["user_input"])
-    print(f"Classification: {classification}")
-
-    if classification == "Error":
-        return jsonify({"message": "Error: Could not parse SLM response."})
+    classification = body["classification"]
     
-    elif classification == "iot":
-        message,(red, blue, green), servo_angle, (pomodoro_start, pomodoro_stop, pomodoro_minutes, pomodoro_seconds) = useIOT.query(body)
+    if classification == "iot":
+        message,(red, blue, green), servo_angle, (pomodoro_start, pomodoro_stop, pomodoro_minutes), response = useIOT.query(body)
         return jsonify({
             "message": message,
             "red_led": red,
@@ -56,8 +61,8 @@ def ollama():
                 "start": pomodoro_start,
                 "stop": pomodoro_stop,
                 "minutes": pomodoro_minutes,
-                "seconds": pomodoro_seconds
-            }
+            },
+            "response": response
         })
     
     elif classification == "documentation":
