@@ -156,7 +156,7 @@ struct responseLLM sendToLlm(float temp, float hum, bool button_state, bool ledR
   }
 
   // Extrair dados da resposta
-  Serial.println(String(responseDoc["response"]));
+  // Serial.println(String(responseDoc["response"]));
 
   response.message = responseDoc["message"] | "Sem resposta";
   response.leds.red = responseDoc["red_led"] | false;

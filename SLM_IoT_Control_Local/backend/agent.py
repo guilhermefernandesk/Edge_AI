@@ -13,15 +13,15 @@ class AGENT:
 
     def ask_ollama_for_classification(self, user_input):
         classification_prompt = f"""
-Classifique a intenção do usuário em UMA palavra das 3 categorias a seguir.
-- iot: perguntas sobre sensores, atuadores, comandos, LEDs, temperatura, DHT11, GPIO, microcontrolador executando ações.
-- documentation: perguntas sobre Franzininho, especificações, pinos, módulos, datasheet, tutoriais.
-- general: qualquer outra coisa.
-Regras:
-- Responda SOMENTE com exatamente uma dessas palavras.
-- Não adicione nenhuma frase, explicação ou texto adicional.
-Pergunta: {user_input}
-Resposta:
+Classify the user's intention using ONE word from the categories below.
+- iot: questions about sensors, actuators, commands, LEDs, temperature, DHT11, GPIO, microcontroller actions.
+- documentation: questions about Franzininho, specifications, pins, modules, datasheet, tutorials.
+- general: anything else.
+Rules:
+- Respond with EXACTLY one of these words.
+- Do NOT add any sentence, explanation, or additional text.
+Question: {user_input}
+Answer:
 """
         try:
             print(f"Sending classification request to Ollama")
@@ -56,10 +56,10 @@ Resposta:
         try:
             print(f"Sending query to Ollama")
             forced_query = (
-            "Responda APENAS com 1 frase curta, com no máximo 12 palavras. "
-            "Não use exemplos, listas ou explicações. "
-            "Não escreva mais de UMA sentença. "
-            f"Pergunta: {query}\nResposta:"
+                "Respond ONLY with 1 short sentence, with a maximum of 12 words. "
+                "Do not use examples, lists, or explanations. "
+                "Do not write more than ONE sentence. "
+                f"Question: {query}\nAnswer:"
             )
             response = self.session.post(
                 f"{self.ollama_host}/api/generate",

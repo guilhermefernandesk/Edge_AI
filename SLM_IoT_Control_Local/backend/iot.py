@@ -15,7 +15,7 @@ class IOT:
 
     def create_interactive_prompt(self, temp, hum, button_state, ledRed, ledBlue, ledGreen, ldrValue, servoAngle, user_input):
         return f"""
-Você é um controlador IoT SLM. Sempre responda com um JSON válido somente.
+You are an IoT SLM controller. Always respond ONLY with valid JSON.
 SYSTEM STATUS:
 - temperature: {temp:.1f}
 - humidity: {hum:.1f}
@@ -25,27 +25,29 @@ SYSTEM STATUS:
 - servo_angle: {servoAngle}
 RULES:
 1. Output ONLY this JSON structure:
-{{
- "message": "",
- "leds": {{
-     "red_led": bool,
-     "green_led": bool,
-     "blue_led": bool
- }},
- "servo_angle": int,
- "pomodoro": {{
-     "start": bool,
-     "stop": bool,
-     "minutes": int,
- }}
+{{ 
+"message": "",
+"leds": {{ 
+    "red_led": bool,
+    "green_led": bool,
+    "blue_led": bool
+}},
+"servo_angle": int,
+"pomodoro": {{ 
+    "start": bool,
+    "stop": bool,
+    "minutes": int
 }}
-2. Do NOT add extra text outside the JSON.
-3. If user asks information → keep hardware states unchanged.
-4. If user requests an action → update the states.
-5. Only ONE LED ON unless user explicitly requests multiple.
-6. Evaluate conditions (e.g., "if", "quando") based on the system status temperature, humidity and ldr_value.
-7. Be clear and short in "message".
-USER INPUT: "{user_input}" 
+}}
+2. Do NOT add any text outside the JSON.
+3. If the user asks for information, keep all hardware states unchanged.
+4. If the user requests an action, update the states.
+5. Only ONE LED may be ON unless the user explicitly requests multiple.
+6. If the user asks about the environment, evaluate study productivity based on SYSTEM STATUS.
+7. Keep "message" short and clear.
+
+USER INPUT: "{user_input}"
+
 """
 
     def slm_inference(self, PROMPT):
