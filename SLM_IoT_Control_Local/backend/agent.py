@@ -14,7 +14,7 @@ class AGENT:
     def ask_ollama_for_classification(self, user_input):
         classification_prompt = f"""
 Classify the user's intention using ONE word from the categories below.
-- iot: questions about sensors, actuators, commands, LEDs, temperature, DHT11, GPIO, microcontroller actions.
+- iot: questions about sensors, actuators, commands, LEDs, temperature, DHT11, GPIO, microcontroller actions, pomodoro timer.
 - documentation: questions about Franzininho, specifications, pins, modules, datasheet, tutorials.
 - general: anything else.
 Rules:
