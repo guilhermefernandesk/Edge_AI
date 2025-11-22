@@ -90,17 +90,21 @@ Antes de iniciar os serviços, é necessário criar um arquivo de configuração
     - Configure as credenciais de sua rede WiFi.
     - Atualize a variável que aponta para o servidor backend com o mesmo `SERVER_IP` que você definiu no arquivo `.env`.
     - Compile e envie o código para a sua placa.
-------------------------------------------------------------------------
+
+---
+
 ## Como Usar
 
 Exemplos de comandos no monitor serial:
 
 **Exemplos de comandos:**
 
--   **"Inicie um Pomodoro de 25 minutos."**\
--   **"Ligue o LED azul"**\
--   **"Qual microcontrolador da Franzininho?."**
-------------------------------------------------------------------------
+- **"Inicie um Pomodoro de 25 minutos."**\
+- **"Ligue o LED azul"**\
+- **"Qual microcontrolador da Franzininho?."**
+
+---
+
 ## Estrutura do Projeto
 
 ```
@@ -124,7 +128,7 @@ SLM_IoT_Control_Local/
 
 ## 📜 Licença
 
-Este projeto está licenciado sob a [Licença MIT](LICENSE). Fique à vontade para utilizar e modificar o código com a devida atribuição.
+Este projeto está licenciado sob a [GPL-3.0 license](LICENSE). Fique à vontade para utilizar e modificar o código com a devida atribuição.
 
 ---
 
